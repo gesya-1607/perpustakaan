@@ -1,0 +1,82 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url = env("DATABASE_URL")
+}
+
+enum UserRole {
+  ADMIN
+  PETUGAS
+  STUDENT
+}
+
+model Student {
+  id        Int      @id @default(autoincrement())
+  nis       String   @unique
+  name      String
+  email     String?  @unique
+  password  String
+  UserRole UserRole
+  kelas     String
+  jurusan   String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  peminjaman Peminjaman_Buku[]
+
+}
+
+model Walas {
+  id_walas       Int      @id @default(autoincrement())
+  nama_walas     String
+  no_tlp         String? @unique
+  alamat         String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Buku {
+  id_buku       Int      @id @default(autoincrement())
+  judul         String
+  pengarang     String
+  tahun         String 
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  peminjaman Peminjaman_Buku[]
+}
+
+model Peminjaman_Buku {
+  id_peminjaman   Int      @id @default(autoincrement())
+  id_buku         Int
+  id_siswa        Int
+  tanggal_pinjam DateTime
+  tanggal_kembali DateTime?
+  pengembalian Pengembalian_Buku[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  buku   Buku    @relation(fields: [id_buku], references: [id_buku])
+  siswa  Student @relation(fields: [id_siswa], references: [id])
+}
+
+model Pengembalian_Buku {
+  id_pengembalian   Int      @id @default(autoincrement())
+  id_peminjaman    Int
+  tanggal_kembali DateTime @default(now())
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  peminjaman Peminjaman_Buku @relation(fields: [id_peminjaman], references: [id_peminjaman])
+}
+
+
