@@ -2,6 +2,7 @@ import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import { User } from '@prisma/client';
 
 @Injectable()
 export class AuthService {
@@ -15,7 +16,7 @@ export class AuthService {
     email: string,
     name: string,
     password: string,
-    UserRole: 'ADMIN' | 'PETUGAS' | 'STUDENT',
+    UserRole: User['UserRole'],
   ) {
     const existing = await this.prisma.user.findUnique({
       where: { email },
