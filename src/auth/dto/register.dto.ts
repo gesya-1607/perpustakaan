@@ -1,21 +1,21 @@
+import { ApiProperty } from '@nestjs/swagger';
 import { IsEmail, IsString, IsEnum } from 'class-validator';
-
-enum UserRole {
-  ADMIN = 'ADMIN',
-  PETUGAS = 'PETUGAS',
-  STUDENT = 'STUDENT',
-}
+import { UserRole } from '@prisma/client';
 
 export class RegisterDto {
+  @ApiProperty()
   @IsEmail()
   email: string;
 
+  @ApiProperty()
   @IsString()
   name: string;
 
+  @ApiProperty()
   @IsString()
   password: string;
 
-  @IsEnum(UserRole)
+  @ApiProperty({ enum: UserRole }) // 🔥 biar muncul di swagger
+  @IsEnum(UserRole) // 🔥 biar validasi benar
   UserRole: UserRole;
 }
