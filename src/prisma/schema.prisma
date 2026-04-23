@@ -79,4 +79,14 @@ model Pengembalian_Buku {
   peminjaman Peminjaman_Buku @relation(fields: [id_peminjaman], references: [id_peminjaman])
 }
 
+model User {
+  id       Int    @id @default(autoincrement())
+  email    String @unique
+  name     String
+  password String
+  UserRole UserRole
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
 

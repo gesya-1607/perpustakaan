@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException } from '@nestjs/common';
+import { Injectable, UnauthorizedException, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
@@ -10,30 +10,59 @@ export class AuthService {
     private jwtService: JwtService,
   ) {}
 
-  async login(username: string, password: string) {
-    const student = await this.prisma.student.findUnique({
-      where: { email: username },
+  // ✅ REGISTER (SUDAH FIX)
+  async register(
+    email: string,
+    name: string,
+    password: string,
+    UserRole: 'ADMIN' | 'PETUGAS' | 'STUDENT',
+  ) {
+    const existing = await this.prisma.user.findUnique({
+      where: { email },
     });
 
-    if (!student) {
+    if (existing) {
+      throw new BadRequestException('Email sudah digunakan');
+    }
+
+    const hashedPassword = await bcrypt.hash(password, 10);
+
+    const user = await this.prisma.user.create({
+      data: {
+        email,
+        name,
+        password: hashedPassword,
+        UserRole: UserRole, // ✅ FIX
+      },
+    });
+
+    return {
+      message: 'Register berhasil',
+      user,
+    };
+  }
+
+  // ✅ LOGIN (TETAP)
+  async login(email: string, password: string) {
+    const user = await this.prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
       throw new UnauthorizedException('Email tidak ditemukan');
     }
 
-    if (!student.password) {
-      throw new UnauthorizedException('Password tidak valid');
-    }
-
-    // ⬇️ FIX DI SINI
-    const passwordValid = await bcrypt.compare(password, student.password);
+    const passwordValid = await bcrypt.compare(password, user.password);
     if (!passwordValid) {
       throw new UnauthorizedException('Password salah');
     }
 
     const payload = {
-      sub: student.id,
-      email: student.email,
-      role: student.UserRole,
+      sub: user.id,
+      email: user.email,
+      role: user.UserRole,
     };
+
     return {
       access_token: this.jwtService.sign(payload),
     };
